@@ -1,6 +1,6 @@
 import os
-import fitz
 import re
+import fitz
 import pandas as pd
 import pyautogui as pya
 from dotenv import load_dotenv
@@ -24,6 +24,7 @@ LINK_PDF = os.getenv('LINK_PDF')
 if "\\" in LINK_PDF:
     LINK_PDF = LINK_PDF.replace("\\", "/").strip('\'"')
 result_text = get_pdf_document(LINK_PDF)
+# print(result_text)
 
 
 def get_personals_data():
@@ -62,11 +63,12 @@ def get_name():
                     result = ' '.join(n for n in split_match if n != 'NATURALIDADE')
             return result
         else:
-            return None
+            return None        
     except Exception as error:
         print("Não foi possível capturar o 'NOME'.")
         print(error)
         pya.alert(error)
+        return None
 
 
 def get_father():
@@ -263,16 +265,4 @@ def get_cpf():
 
 
 print(get_personals_data())
-# print(result_text)
 # print(get_name())
-# print(get_father())
-# print(get_mother())
-# print(get_birth())
-# print(get_naturalness())
-# print(get_civil_status())
-# print(get_gender())
-# print(get_instruction())
-# print(get_fone())
-# print(get_cep())
-# print(get_rg())
-# print(get_cpf())
