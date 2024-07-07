@@ -6,18 +6,29 @@ from dotenv import load_dotenv
 from personal_data import get_personals_data
 
 
+# FILE_PATH = os.getenv('FILE_PATH1')
+def get_links(link_tabela=None, link_diretorio=None):
+    print(f'get_links: {link_tabela}')
+    print(f'get_links: {link_diretorio}')
+    if link_tabela:
+        if "\\" in link_tabela:
+            link_tabela = link_tabela.replace("\\", "/").strip('\'"')
+        FILE_PATH = link_tabela
+    else:
+        FILE_PATH = os.getenv('FILE_PATH1')
+    print(f'file_path: {FILE_PATH}')
+    return FILE_PATH
 
 # DADOS CONTRATUAIS
 # Planilha Controle de Vagas
 def get_order_worksheet():
     load_dotenv()
-    FILE_PATH = os.getenv('FILE_PATH1')
+    FILE_PATH = get_links()
     SHEET_NAME = os.getenv('SHEET_NAME1')
     order_worksheet = pd.read_excel(FILE_PATH, sheet_name=SHEET_NAME, skiprows=6)
     order_worksheet = order_worksheet[['Tipo Movimento','Pessoa Afetada','Função','Data Início','Lotação','Status Pedido','Status Atualização Sistema']]
     order_worksheet['Data Início'] = pd.to_datetime(order_worksheet['Data Início'], errors='coerce')
     order_worksheet['Data Início'] = order_worksheet['Data Início'].dt.strftime('%d/%m/%Y')
-    
     return order_worksheet
 
 
@@ -57,12 +68,12 @@ def get_enterprises_worksheet():
     
 
 # RETURNS ALL CONTRACTUALS DATA
-def get_contractuals_data(link_pdf):
+def get_contractuals_data(pdf_link):
     order_worksheet = get_order_worksheet()
     function_worksheet = get_function_worksheet()
     workplace_worksheet = get_workplace_worksheet()
     enterprise_worksheet = get_enterprises_worksheet()
-    NAME = get_personals_data(link_pdf)['NAME']
+    NAME = get_personals_data(pdf_link)['NAME']
     
     filtered_data = order_worksheet[order_worksheet['Pessoa Afetada'] == NAME]
     if filtered_data.empty:
@@ -105,6 +116,3 @@ def get_contractuals_data(link_pdf):
     return contractuals_data
 
 
-
-# print('\nDados Contratuais:\n------------------------------------------------------')
-# print(get_contractuals_data())

@@ -2,11 +2,37 @@ import os
 import re
 import pandas as pd
 import pyautogui as pya
+from unidecode import unidecode
 from pdfminer.high_level import extract_text
-    
+from pdfminer.layout import LAParams
+from PyPDF2 import PdfReader
 
-def get_personals_data(link_pdf):
-    pdf_text = extract_pdf_document(link_pdf)
+
+def process_pdf(pdf_link):
+    personals_data_list = {}
+    if "\\" in pdf_link:
+            pdf_link = pdf_link.replace("\\", "/").strip('\'"')
+    reader = PdfReader(pdf_link)
+    num_pages = len(reader.pages)
+    for page_index in range(num_pages):
+        pdf_text = extract_pdf_text_from_page(pdf_link, page_index)
+        pdf_text = unidecode(pdf_text)
+        personals_data = get_personals_data(pdf_text)
+        page_number = page_index + 1
+        personals_data_list[page_number] = personals_data
+        # print(f'Dados da página {page_number}:')
+        # print(personals_data_list[page_number])
+    return personals_data_list
+
+
+def get_personals_data(pdf_text):
+    # pdf_text = extract_pdf_text(pdf_link)
+    # pdf_text = unidecode(pdf_text)
+    # reader = PdfReader(pdf_link)
+    # num_pages = len(reader.pages)
+    # for page_number in range(num_pages):
+    #     pdf_text = extract_pdf_text_from_page(pdf_link, page_number)
+    #     pdf_text = unidecode(pdf_text)
     personals_data = {    
         'NAME': get_name(pdf_text),
         'FATHER': get_father(pdf_text),
@@ -24,13 +50,15 @@ def get_personals_data(link_pdf):
     }
     return personals_data
 
-    
-def extract_pdf_document(link_pdf):
+
+def extract_pdf_text_from_page(pdf_link, page_number):
     try:
-        if "\\" in link_pdf:
-            link_pdf = link_pdf.replace("\\", "/").strip('\'"')
-        text = extract_text(link_pdf)
-        formatted_text = re.sub(":\n\n",": ", text).replace("\n\n","\n").replace(" :", ":")
+        if "\\" in pdf_link:
+            pdf_link = pdf_link.replace("\\", "/").strip('\'"')
+        laparams = LAParams()
+        with open(pdf_link, 'rb') as pdf_file:
+            text = extract_text(pdf_file, page_numbers=[page_number], laparams=laparams)
+            formatted_text = re.sub(":\n\n",": ", text).replace("\n\n","\n").replace(" :", ":")
         return formatted_text
     except Exception as e:
         print(f"Erro ao abrir o PDF: {e}")
@@ -38,12 +66,17 @@ def extract_pdf_document(link_pdf):
         return None   
 
 
+def sanitize_filename(filename):
+    return filename.replace('\n', '').replace('\r', '').replace('\\', '-').replace('/', '-').replace(':', '-').replace('*', '-').replace('?', '-').replace('"', '-').replace('<', '-').replace('>', '-').replace('|', '-')
+
+
 def get_name(pdf_text): # OK
     try:
-        pattern = r"NOME\s*:\s*(.+)"
+        pattern = r"NOME\s*:\s*([A-Z\s]+)"
         match = re.search(pattern, pdf_text, re.IGNORECASE)
         if match:
-            result = match.group(1).strip()
+            result = match.group(1).strip().split('\n')[0].strip()
+            result = sanitize_filename(result)
             return result
         else:
             pattern = r'EMPREGADO\s*:?\n?\s*(.+)'
@@ -61,10 +94,13 @@ def get_name(pdf_text): # OK
 
 def get_father(pdf_text): # OK
     try:
-        pattern = r"PAI\s*:\s*([A-Z\s]+)"
+        pattern = r"PAI\s*:\s*([A-Z\s]+?)(?=\s*MAE|$)"
         match = re.search(pattern, pdf_text, re.IGNORECASE)
         if match:
             result = match.group(1).split('\n')[0].strip()
+            # result = match.group(1).strip()
+            # if 'MAE' or 'MÃE' in result:
+            #     result = result.upper().strip().split('MAE')
             return result
         else:
             pattern = r'PAI\s*:?\n?\s*(.+)'
@@ -82,19 +118,19 @@ def get_father(pdf_text): # OK
 
 def get_mother(pdf_text): # OK
     try:
-        pattern = r"MÃE\s*:\s*([A-Z\s]+)"
+        pattern = r"MAE\s*:\s*([A-Z\s]+)"
         match = re.search(pattern, pdf_text, re.IGNORECASE)
         if match:
             result = match.group(1).split('\n')[0].strip()
             return result
         else:
-            pattern = r":\s*([A-Z\s*]+)\n\s*MÃE"
+            pattern = r":\s*([A-Z\s*]+)\n\s*MAE"
             match = re.search(pattern, pdf_text, re.IGNORECASE)
             if match:
                 result = match.group(1).strip()
                 return result
             else:
-                pattern = r'MÃE\s*:?\n?\s*(.+)'
+                pattern = r'MAE\s*:?\n?\s*(.+)'
                 match = re.search(pattern, pdf_text, re.IGNORECASE)
                 if match:
                     result = match.group(1).strip()
@@ -130,7 +166,7 @@ def get_birth(pdf_text): # OK
 
 def get_naturalness(pdf_text): # OK
     try:
-        pattern = r"NATURALIDADE\s*:\s*(\b[A-Z\s]+\b)"
+        pattern = r"NATURALIDADE\s*:\s*(\b[A-Z\s]+\b)(?=\s*NACIONALIDADE|$)"
         match = re.search(pattern, pdf_text, re.IGNORECASE)
         if match:
             result = match.group(1).split('\n')[0].strip()
@@ -217,25 +253,26 @@ def get_gender(pdf_text): # OK
 
 def get_instruction(pdf_text):
     try:
-        pattern = r"INSTRUÇÃO\s*:\s*([A-Z\s]+)"
-        # pattern = r"INSTRUÇÃO\s*:\s*(.*)"
+        pattern = r"INSTRUCAO\s*:\s*([A-Z\s]+)"
         match = re.search(pattern, pdf_text, re.IGNORECASE)
         if match:
             result = match.group(0).strip()
         else:
-            pattern = r'INSTRUÇÃO\s*:?\n?\s*(.+)'
+            pattern = r'INSTRUCAO\s*:?\n?\s*(.+)'
             match = re.search(pattern, pdf_text, re.IGNORECASE)
             if match:
                 result = match.group(1).strip()
             else:
                 return None
-        if 'MÉDIO' in result.upper() and 'INCOMPLET' in result.upper():
+        if 'MEDIO' in result.upper() and 'INCOMPLET' in result.upper():
             result = '6'
-        elif 'MÉDIO' in result.upper() and 'COMPLET' in result.upper():
+        elif 'MEDIO' in result.upper() and 'COMPLET' in result.upper():
             result = '7'
         elif 'SUPERIOR' in result.upper() and 'INCOMPLET' in result.upper():
             result = '8'
         elif 'SUPERIOR' in result.upper() and 'COMPLET' in result.upper():
+            result = '9'
+        elif 'POS' in result.upper():
             result = '9'
         else:
             result = '13'
@@ -254,6 +291,11 @@ def get_fone(pdf_text): # OK
             result = match.group(1).replace(' ','').strip()
             return result
         else:
+            pattern = r"CELULAR\s*:?\n?\s*(\d{2}\s*\d{9})"
+            match = re.search(pattern, pdf_text, re.IGNORECASE)
+            if match:
+                result = match.group(1).replace(' ','').strip()
+                return result
             return None
     except Exception as error:
         print("Não foi possível capturar o 'TELEFONE'.")
@@ -272,7 +314,15 @@ def get_cep(pdf_text): # OK
             result = match[0].strip()
             return result
         else:
-            return None
+            pattern = r"(\d{2}\d{3}-\d{3})"
+            match = re.findall(pattern, pdf_text, re.IGNORECASE)
+            if match and len(match) > 1:
+                result = match[1].strip()
+                return result
+            elif match and len(match) == 1:
+                result = match[0].strip()
+                return result
+            # return None
     except Exception as error:
         print("Não foi possível capturar o 'CEP'.")
         print(error)
@@ -287,11 +337,11 @@ def get_rg(pdf_text): # OK
             result = match.group(1)
             return result
         else:
-            pattern = r"RG\s*(?:NÚMERO)?/?(?:ÓRGÃO)?\s*:?\n?\s*(\d{8,13})"
+            pattern = r"RG\s*(?:NUMERO)?/?(?:ORGAO)?\s*:?\n?\s*(\d{8,13})"
             match = re.search(pattern, pdf_text, re.IGNORECASE)
             if match:
                 result = match.group(0).strip().split()
-                if any('NÚMERO' in item.upper() for item in result):
+                if any('NUMERO' in item.upper() for item in result):
                     return result[2]
                 else:
                     return result[1]
@@ -304,7 +354,8 @@ def get_rg(pdf_text): # OK
     
 def get_cpf(pdf_text): # OK
     try:
-        pattern = r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b" #OK
+        # pattern = r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b" #OK
+        pattern = r"\b\d{3}\.\d{3}\.\d{3}--?\d{2}\b" #OK
         match = re.search(pattern, pdf_text)
         if match:
             result = match.group(0).replace('-','').replace('.','')
@@ -317,6 +368,3 @@ def get_cpf(pdf_text): # OK
         return None
 
 
-
-# print('\nDados Pessoais:\n------------------------------------------------------')
-# print(get_personals_data(link_pdf))

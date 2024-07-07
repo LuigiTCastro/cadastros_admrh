@@ -79,3 +79,27 @@ ii Iterar Tabela
 a) Quando todos os registros funcionais estão em um único PDF, faz mais sentido fornecer o PDF, e o código lerá página por página, procurando o nome na tabela.
 
 b) Quando os registros funcionais estão em PDFs individuais, faz mais sentido iterar a tabela, e o código procurará os nomes da tabela em cada PDF.
+
+
+
+
+[Possibilidades]
+a.1) Modo Geral + Inserir PDF
+_PDF individual (01 pág) com informações constantes nas bases Pedidos de Movimentações e Controle de Vagas._
+_PDF com mais de 01 pág com informações constantes nas bases Pedidos de Movimentações e Controle de Vagas._
+(Loop pág por pág, procurando informações nas bases)
+
+a.2) Modo Geral + Iterar Tabela
+_Capturar pendências de cadastro nas bases PM/CV e buscar informações complementares nos pdfs constantes na pasta geral de cadastros._
+(Loop linha por linha, procurando informações nos pdfs da pasta geral de cadastros)
+
+b.1) Modo Específico + Inserir PDF
+`Alterar link da planilha (tabelas específicas de grandes relações de movimentações)`
+_PDF individual (01 pág) com informações constantes na planilha específica._
+_PDF com mais de 01 pág com informações constantes na planilha específica._
+(Loop pág por pág, procurando informações na planilha)
+
+b.2) Modo Específico + Iterar Tabela
+`Alterar link da planilha (tabelas específicas de grandes relações de movimentações)`
+_Capturar pendências de cadastro na planilha específca e buscar informações complementares nos pdfs constantes na pasta específica de cadastros._
+(Loop linha por linha, procurando informações nos pdfs da pasta específia de cadastros)

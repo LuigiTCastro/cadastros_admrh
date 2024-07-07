@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from personal_data import get_personals_data
+from personal_data import get_personals_data, process_pdf
 from contractual_data import get_contractuals_data
 
 
@@ -285,6 +285,8 @@ def import_of_existent_register(driver, personals_data, contractuals_data, matr)
     covenant_cod_value = covenant_cod_field.get_attribute('value')
     if covenant_cod_value:
         covenant_cod_field.clear()
+        covenant_cod_field.send_keys(ENTERPRISE_COD)
+    else:
         covenant_cod_field.send_keys(ENTERPRISE_COD)
     pya.press('tab')
     time.sleep(1)
@@ -845,18 +847,28 @@ def handle_website(driver, personals_data, contractuals_data):
     driver.quit()
 
 
-def run_application(link_pdf):
-    personals_data = get_personals_data(link_pdf)
-    contractuals_data = get_contractuals_data(link_pdf)
+def run_application(pdf_link):
+    # personals_data = get_personals_data(pdf_link)
+    personals_data_list = process_pdf(pdf_link)
+    contractuals_data = get_contractuals_data(pdf_link)
     
-    if not personals_data or not contractuals_data:
-        print('Dados não encontrados.')
-        pya.alert('Dados não encontrados')
-        return
-        
-    print(f'\nDados Pessoais:\n-------------------------------------------------\n{personals_data}')
-    print(f'\nDados Contratuais:\n-------------------------------------------------\n{contractuals_data}')
-    
-    driver = create_driver()
-    handle_website(driver, personals_data, contractuals_data)
-    
+    for personals_data in personals_data_list.items():
+        if personals_data:
+            print(f'\nDados Pessoais:\n-------------------------------------------------\n{personals_data}')
+        else:
+            print('Dados pessoais não encontrados.')
+            pya.alert('Dados pessoais não encontrados')
+            
+        if contractuals_data:
+            print(f'\nDados Contratuais:\n-------------------------------------------------\n{contractuals_data}')
+        else:
+            print('Dados contratuais não encontrados.')
+            pya.alert('Dados contratuais não encontrados')
+            
+        # driver = create_driver()
+        # handle_website(driver, personals_data, contractuals_data)
+
+        proceed = input('Deseja prosseguir? (s/n)')
+        if proceed.lower() != 's':
+            break
+
