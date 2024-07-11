@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pyautogui as pya
 from dotenv import load_dotenv
-from personal_data import get_personals_data
+from personal_data import get_personals_data, process_pdf
 
 
 # FILE_PATH = os.getenv('FILE_PATH1')
@@ -73,7 +73,8 @@ def get_contractuals_data(pdf_link):
     function_worksheet = get_function_worksheet()
     workplace_worksheet = get_workplace_worksheet()
     enterprise_worksheet = get_enterprises_worksheet()
-    NAME = get_personals_data(pdf_link)['NAME']
+    NAME = process_pdf(pdf_link)[1]['NAME']
+    print(NAME)
     
     filtered_data = order_worksheet[order_worksheet['Pessoa Afetada'] == NAME]
     if filtered_data.empty:
@@ -114,5 +115,4 @@ def get_contractuals_data(pdf_link):
         'ENTERPRISE_COD' : ENTERPRISE_COD
     }
     return contractuals_data
-
 

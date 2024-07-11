@@ -29,28 +29,56 @@ def access_system(driver):
     wait = WebDriverWait(driver, 10)
     
     # USUARIO
-    user_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtDesUsuario_c')))
-    user_field.send_keys(USER)
+    try:
+        user_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtDesUsuario_c')))
+        user_field.send_keys(USER)
+    except Exception as error:
+        print("Erro ao tentar inserir 'USUÁRIO'")
+        print(error)
+        pya.alert("Erro ao tentar inserir 'USUÁRIO'")
 
     # SENHA
-    password_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtDesSenha_c')))
-    password_field.send_keys(PASSWORD)
+    try:
+        password_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtDesSenha_c')))
+        password_field.send_keys(PASSWORD)
+    except Exception as error:
+        print("Erro ao tentar inserir 'SENHA'")
+        print(error)
+        pya.alert("Erro ao tentar inserir 'SENHA'")
 
     # CLICAR PARA ENTRAR
-    enter_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='ui-button-text ui-c']")))
-    enter_button.click()
-    
+    try:
+        enter_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='ui-button-text ui-c']")))
+        enter_button.click()
+    except Exception as error:
+        print("Erro ao tentar clicar no botão 'ENTRAR'")
+        print(error)
+        pya.alert("Erro ao tentar clicar no botão 'ENTRAR'")
+
     # TABELAS
-    tables_button = driver.find_elements(By.XPATH, "//h3[@class='ui-accordion-header ui-helper-reset ui-state-default ui-corner-all']")
-    tables_button[0].click()
-    
+    try:
+        tables_button = driver.find_elements(By.XPATH, "//h3[@class='ui-accordion-header ui-helper-reset ui-state-default ui-corner-all']")
+        tables_button[0].click()
+    except Exception as error:
+        print("Erro ao tentar clicar acessar a aba 'TABELAS'")
+        print(error)
+        pya.alert("Erro ao tentar clicar acessar a aba 'TABELAS'")
+
     # CADASTROS
-    register_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, 'Cadastro de Servidores/Magistrados')))
-    register_button.click()
+    try:
+        register_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, 'Cadastro de Servidores/Magistrados')))
+        register_button.click()
+    except Exception as error:
+        print("Erro ao tentar acessar a aba 'CADASTRO DE SERVIDORES'")
+        print(error)
+        pya.alert("Erro ao tentar acessar a aba 'CADASTRO DE SERVIDORES'")
 
 
 def import_of_existent_register(driver, personals_data, contractuals_data, matr):
+    load_dotenv()
     wait = WebDriverWait(driver, 10)
+    print("O colaborador possui histórico inativo. Logo, o cadastro será feito pelo modo 'Importar de Registro Existente'")
+    
     NAME = personals_data['NAME']
     CPF = personals_data['CPF']
     ADMISSION = contractuals_data['ADMISSION']
@@ -64,8 +92,10 @@ def import_of_existent_register(driver, personals_data, contractuals_data, matr)
     RELATION_COD = '4'
     
     # RELATÓRIO DE EXECUÇÃO
-    with open('C:/Users/luigi/tjce.jus.br/Acompanhamento De Contratos - Documentos/RH TERCEIRIZAÇÃO 2024/00. CONTROLES/DOCUMENTOS CADASTRAIS - Colabs/_Para Cadastro/Execution Reports/report.csv', 'w') as report:
+    REPORT = os.getenv('REPORT')
+    with open(REPORT, 'w') as report:
         report.write('Relatório de cadastrados realizados nessa execução:\n')
+        
     try:
         new_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:j_idt75')))
         new_button.click()
@@ -232,9 +262,13 @@ def import_of_existent_register(driver, personals_data, contractuals_data, matr)
     except TimeoutException:
         wait.until(EC.presence_of_element_located((By.ID, 'form:txtMatriculaCabInc_c')))
 
-    new_matr_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtMatriculaCabInc_c')))
-    new_matr_txt = new_matr_field.get_attribute('value')
-    print(f'tentativa matr txt 1: {new_matr_txt}')
+    try:
+        new_matr_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtMatriculaCabInc_c')))
+        new_matr_txt = new_matr_field.get_attribute('value')
+        print(f'tentativa matr txt 1: {new_matr_txt}')
+    except Exception as error:
+        print("Erro ao tentar capturar 'MATRÍCULAR'")
+        pya.alert("Erro ao tentar capturar 'MATRÍCULAR'")
     
     try:
         email_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:txtEmail_c')))
@@ -243,66 +277,73 @@ def import_of_existent_register(driver, personals_data, contractuals_data, matr)
         email_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:txtEmail')))
         email_txt = email_field.get_attribute('value')
     
-    # if email_txt:
-    #     add_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:btnAddMail')))
-    #     add_email_button.click()
-    #     new_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmails:btnNovoEmail')))
-    #     new_email_button.click()
-    #     new_email_field = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:txtEmailF_c')))
-    #     new_email_field.send_keys(email_txt)
-    #     type_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:cboTipoF_c')))
-    #     type_button.click()
-    #     particular_option = wait.until(EC.visibility_of_element_located((By.XPATH, "//li[@data-label='1-Particular']")))
-    #     particular_option.click()
-    #     save_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:btn_gravar')))
-    #     save_button.click()
-    #     time.sleep(2)
-    #     try:
-    #         close_button = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@class='ui-icon ui-icon-closethick']")))
-    #         print("Elemento encontrado. Verificando se está clicável.")
-    #         close_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='ui-icon ui-icon-closethick']")))
-    #         close_button.click()
-    #         print("Elemento clicado com sucesso.")
-
-    #     except TimeoutException as e:
-    #         print("TimeoutException: Não foi possível encontrar ou clicar no elemento dentro do tempo limite.")
-    #         raise e
-    # else:
-    #     email_field.clear()
-    #     email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
-    email_field.clear()
-    email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
-     
-    general_save_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:btnGravar_Funcionarios')))
-    general_save_button.click()
-    time.sleep(5)
+    try:
+        if email_txt:
+            add_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:btnAddMail')))
+            add_email_button.click()
+            new_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmails:btnNovoEmail')))
+            new_email_button.click()
+            new_email_field = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:txtEmailF_c')))
+            new_email_field.send_keys(email_txt)
+            type_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:cboTipoF_c')))
+            type_button.click()
+            particular_option = wait.until(EC.visibility_of_element_located((By.XPATH, "//li[@data-label='1-Particular']")))
+            particular_option.click()
+            save_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:btn_gravar')))
+            save_button.click()
+            time.sleep(2)
+            close_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='ui-icon ui-icon-closethick']"))) # NAO TA FUNCIONANDO
+            close_button.click()
+            email_field.clear()
+            email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
+        else:
+            email_field.clear()
+            email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
+    except Exception as error:
+        print("Erro ao tentar registrar 'E-MAIL'")
+        print(error)
+        pya.alert("Erro ao tentar registrar 'E-MAIL'")
         
-    professional_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//li[@class='ui-state-default ui-corner-top']")))
-    professional_button.click()
+    try:
+        professional_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//li[@class='ui-state-default ui-corner-top']")))
+        professional_button.click()
+    except Exception as error:
+        print("Erro ao tentar clicar na aba 'PROFISSIONAL'")
+        pya.alert("Erro ao tentar clicar na aba 'PROFISSIONAL'")
     
-    covenant_cod_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:lovConvOut_txt_cod')))
-    # covenant_cod_value = covenant_cod_field.text
-    covenant_cod_value = covenant_cod_field.get_attribute('value')
-    if covenant_cod_value:
-        covenant_cod_field.clear()
-        covenant_cod_field.send_keys(ENTERPRISE_COD)
-    else:
-        covenant_cod_field.send_keys(ENTERPRISE_COD)
-    pya.press('tab')
-    time.sleep(1)
+    try:
+        covenant_cod_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:lovConvOut_txt_cod')))
+        covenant_cod_value = covenant_cod_field.get_attribute('value')
+        if covenant_cod_value:
+            covenant_cod_field.clear()
+            covenant_cod_field.send_keys(ENTERPRISE_COD)
+        else:
+            covenant_cod_field.send_keys(ENTERPRISE_COD)
+        pya.press('tab')
+        time.sleep(1)
+    except Exception as error:
+        print("Erro ao tentar registrar 'CONVÊNIO'")
+        pya.alert("Erro ao tentar registrar 'CONVÊNIO'")
     
-    general_save_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:btnGravar_Funcionarios')))
-    general_save_button.click()
-    time.sleep(5)
+    try:
+        general_save_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:btnGravar_Funcionarios')))
+        general_save_button.click()
+        time.sleep(5)
+    except Exception as error:
+        print("Erro ao tentar clicar no botão 'GRAVAR'")
+        print(error)
+        pya.alert("Erro ao tentar clicar no botão 'GRAVAR'")
     
     # RELATÓRIO DE EXECUÇÃO
-    with open('C:/Users/luigi/tjce.jus.br/Acompanhamento De Contratos - Documentos/RH TERCEIRIZAÇÃO 2024/00. CONTROLES/DOCUMENTOS CADASTRAIS - Colabs/_Para Cadastro/Execution Reports/report.csv', 'a') as report:
+    REPORT = os.getenv('REPORT')
+    with open(REPORT, 'w') as report:
         report.write(f'{NAME} - {CPF} - {new_matr_txt} - Feito')
 
 
 def include_manually(driver, personals_data, contractuals_data):
+    load_dotenv()
     wait = WebDriverWait(driver, 10)
-    print('Incluir manualmente')
+    print("O colaborador não possui histórico inativo. Logo, o cadastro será feito pelo modo 'Incluir Manualmente'")
     
     # PERSONALS DATA
     NAME = personals_data['NAME']
@@ -329,7 +370,8 @@ def include_manually(driver, personals_data, contractuals_data):
     COST_COD = '9' 
     RELATION_COD = '4' 
     
-    with open('C:/Users/luigi/tjce.jus.br/Acompanhamento De Contratos - Documentos/RH TERCEIRIZAÇÃO 2024/00. CONTROLES/DOCUMENTOS CADASTRAIS - Colabs/_Para Cadastro/Execution Reports/report.csv', 'w') as report:
+    REPORT = os.getenv('REPORT')
+    with open(REPORT, 'a') as report:
         report.write('Relatório de cadastrados realizados nessa execução:\n')
     
     try:
@@ -337,12 +379,22 @@ def include_manually(driver, personals_data, contractuals_data):
     except TimeoutException:
         wait.until(EC.presence_of_element_located((By.ID, 'form:j_idt75')))    
         
-    new_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:j_idt75')))
-    new_button.click()
+    try:
+        new_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:j_idt75')))
+        new_button.click()
+    except Exception as error:
+        print("Erro ao tentar clicar no botão 'NOVO'")
+        print(error)
+        pya.alert("Erro ao tentar clicar no botão 'NOVO'")
     
-    manual_register = wait.until(EC.element_to_be_clickable((By.ID, 'form:btn_digitar_novo')))
-    manual_register.click()
-    
+    try:
+        manual_register = wait.until(EC.element_to_be_clickable((By.ID, 'form:btn_digitar_novo')))
+        manual_register.click()
+    except Exception as error:
+        print("Erro ao tentar clicar no botão 'INCLUIR MANUALMENTE'")
+        print(error)
+        pya.alert("Erro ao tentar clicar no botão 'INCLUIR MANUALMENTE'")
+        
     # PERSONAL DATA
     # -----------------------------------------------------------------------------------------------------
     try:
@@ -721,18 +773,15 @@ def include_manually(driver, personals_data, contractuals_data):
     except TimeoutException:
         wait.until(EC.presence_of_element_located((By.ID, 'form:txtMatriculaCabInc_c')))
 
-    new_matr_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtMatriculaCabInc_c')))
-    new_matr_txt = new_matr_field.get_attribute('value')
-    print(f'tentativa matr txt 1: {new_matr_txt}')
-    
-    # try:
-    #     new_matr_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtMatriculaCabInc')))
-    #     print(f'tentativa 2: {new_matr_field}')
-    # except:
-    #     new_matr_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:j_idt2179')))
-    #     print(f'tentativa 3: {new_matr_field}')
-    
-    # pya.alert('Observar matrícula')
+    try:
+        new_matr_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:txtMatriculaCabInc_c')))
+        new_matr_txt = new_matr_field.get_attribute('value')
+        print(f'tentativa matr txt 1: {new_matr_txt}')
+    except Exception as error:
+        print("Erro ao tentar capturar 'MATRÍCULA'")
+        print(error)
+        pya.alert("Erro ao tentar capturar 'MATRÍCULA'")
+
     
     try:
         email_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:txtEmail_c')))
@@ -741,34 +790,45 @@ def include_manually(driver, personals_data, contractuals_data):
         email_field = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:txtEmail')))
         email_txt = email_field.get_attribute('value')
     
-    if email_txt:
-        add_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:btnAddMail')))
-        add_email_button.click()
-        new_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmails:btnNovoEmail')))
-        new_email_button.click()
-        new_email_field = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:txtEmailF_c')))
-        new_email_field.send_keys(email_txt)
-        type_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:cboTipoF_c')))
-        type_button.click()
-        particular_option = wait.until(EC.visibility_of_element_located((By.XPATH, "//li[@data-label='1-Particular']")))
-        particular_option.click()
-        save_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:btn_gravar')))
-        save_button.click()
-        time.sleep(2)
-        close_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='ui-icon ui-icon-closethick']")))
-        close_button.click()
-        email_field.clear()
-        email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
-    else:
-        email_field.clear()
-        email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
+    try:
+        if email_txt:
+            add_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:tabFuncionarios:btnAddMail')))
+            add_email_button.click()
+            new_email_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmails:btnNovoEmail')))
+            new_email_button.click()
+            new_email_field = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:txtEmailF_c')))
+            new_email_field.send_keys(email_txt)
+            type_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:cboTipoF_c')))
+            type_button.click()
+            particular_option = wait.until(EC.visibility_of_element_located((By.XPATH, "//li[@data-label='1-Particular']")))
+            particular_option.click()
+            save_button = wait.until(EC.element_to_be_clickable((By.ID, 'frmEmail:btn_gravar')))
+            save_button.click()
+            time.sleep(2)
+            close_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[@class='ui-icon ui-icon-closethick']"))) # NAO TA FUNCIONANDO
+            close_button.click()
+            email_field.clear()
+            email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
+        else:
+            email_field.clear()
+            email_field.send_keys(f'{new_matr_txt}@tjce.jus.br')
+    except Exception as error:
+        print("Erro ao tentar registrar 'E-MAIL'")
+        print(error)
+        pya.alert("Erro ao tentar registrar 'E-MAIL'")
      
-    general_save_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:btnGravar_Funcionarios')))
-    general_save_button.click()
-    time.sleep(5)
+    try:
+        general_save_button = wait.until(EC.element_to_be_clickable((By.ID, 'form:btnGravar_Funcionarios')))
+        general_save_button.click()
+        time.sleep(5)
+    except Exception as error:
+        print("Erro ao tentar clicar no botão 'GRAVAR'")
+        print(error)
+        pya.alert("Erro ao tentar clicar no botão 'GRAVAR'")
     
     # RELATÓRIO DE EXECUÇÃO
-    with open('C:/Users/luigi/tjce.jus.br/Acompanhamento De Contratos - Documentos/RH TERCEIRIZAÇÃO 2024/00. CONTROLES/DOCUMENTOS CADASTRAIS - Colabs/_Para Cadastro/Execution Reports/report.csv', 'a') as report:
+    REPORT = os.getenv('REPORT')
+    with open(REPORT, 'a') as report:
         report.write(f'{NAME} - {CPF} - {new_matr_txt} - Feito')
     
     
@@ -847,14 +907,16 @@ def handle_website(driver, personals_data, contractuals_data):
     driver.quit()
 
 
+# FINALIZAR
 def run_application(pdf_link):
     # personals_data = get_personals_data(pdf_link)
     personals_data_list = process_pdf(pdf_link)
     contractuals_data = get_contractuals_data(pdf_link)
     
-    for personals_data in personals_data_list.items():
+    for index, personals_data in personals_data_list.items():
         if personals_data:
             print(f'\nDados Pessoais:\n-------------------------------------------------\n{personals_data}')
+            print(personals_data['CPF'])
         else:
             print('Dados pessoais não encontrados.')
             pya.alert('Dados pessoais não encontrados')
@@ -865,10 +927,13 @@ def run_application(pdf_link):
             print('Dados contratuais não encontrados.')
             pya.alert('Dados contratuais não encontrados')
             
-        # driver = create_driver()
-        # handle_website(driver, personals_data, contractuals_data)
+        driver = create_driver()
+        handle_website(driver, personals_data, contractuals_data)
 
         proceed = input('Deseja prosseguir? (s/n)')
         if proceed.lower() != 's':
             break
 
+
+pdf_link = r"C:\Users\luigi\tjce.jus.br\Acompanhamento De Contratos - Documentos\RH TERCEIRIZAÇÃO 2024\00. CONTROLES\DOCUMENTOS CADASTRAIS - Colabs\_Para Cadastro\FERNANDO SILVA DE PAULA - Registro.pdf"
+run_application(pdf_link)

@@ -17,6 +17,7 @@ def process_pdf(pdf_link):
     for page_index in range(num_pages):
         pdf_text = extract_pdf_text_from_page(pdf_link, page_index)
         pdf_text = unidecode(pdf_text)
+        # print(pdf_text)
         personals_data = get_personals_data(pdf_text)
         page_number = page_index + 1
         personals_data_list[page_number] = personals_data
@@ -104,9 +105,12 @@ def get_father(pdf_text): # OK
             return result
         else:
             pattern = r'PAI\s*:?\n?\s*(.+)'
-            match = re.search(pattern, pdf_text, re.IGNORECASE)
+            match = re.findall(pattern, pdf_text, re.IGNORECASE)
             if match:
-                result = match.group(1).strip()
+                if 'NASCIMENTO' in match[0]:
+                    result = match[1].strip()
+                else:
+                    result = match[0].strip()
                 return result
             else:
                 return None
@@ -368,3 +372,7 @@ def get_cpf(pdf_text): # OK
         return None
 
 
+
+pdf_link = r"C:\Users\luigi\tjce.jus.br\Acompanhamento De Contratos - Documentos\RH TERCEIRIZAÇÃO 2024\00. CONTROLES\CONTROLE DE VAGAS E MOVIMENTAÇÕES\Relatórios\_MIGRAÇÕES DE CONTRATOS 2024\02 EDUCAÇÃO - OK\Registros\SABRINA FARIAS SOUZA DOS SANTOS.pdf"
+pdf_link = r"C:\Users\luigi\tjce.jus.br\Acompanhamento De Contratos - Documentos\RH TERCEIRIZAÇÃO 2024\00. CONTROLES\CONTROLE DE VAGAS E MOVIMENTAÇÕES\Relatórios\_MIGRAÇÕES DE CONTRATOS 2024\02 EDUCAÇÃO - OK\Registros\LUANA MORAIS DE MELO.pdf"
+print(process_pdf(pdf_link))

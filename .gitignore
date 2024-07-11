@@ -1,5 +1,6 @@
 # Ignore a fold
 others/
+output_img/
 .env
 
 # Byte-compiled / optimized / DLL files
