@@ -1,39 +1,52 @@
 import os
 import re
+import fitz
+import pytesseract
 import pandas as pd
 import pyautogui as pya
+from PIL import Image
 from unidecode import unidecode
 from pdfminer.high_level import extract_text
 from pdfminer.layout import LAParams
 from PyPDF2 import PdfReader
+from others.ocr_reader import pdf_img_to_txt
 
+# TUDO OK
+# VERIFICAR APENAS A LÓGICA DE OCR
 
-def process_pdf(pdf_link):
+def get_personals_data_list(pdf_link=None):
     personals_data_list = {}
-    if "\\" in pdf_link:
-            pdf_link = pdf_link.replace("\\", "/").strip('\'"')
-    reader = PdfReader(pdf_link)
-    num_pages = len(reader.pages)
-    for page_index in range(num_pages):
-        pdf_text = extract_pdf_text_from_page(pdf_link, page_index)
-        pdf_text = unidecode(pdf_text)
-        # print(pdf_text)
-        personals_data = get_personals_data(pdf_text)
-        page_number = page_index + 1
-        personals_data_list[page_number] = personals_data
-        # print(f'Dados da página {page_number}:')
-        # print(personals_data_list[page_number])
+    if pdf_link is not None:
+        if "\\" in pdf_link:
+                pdf_link = pdf_link.replace("\\", "/").strip('\'"')        
+        reader = PdfReader(pdf_link)
+        num_pages = len(reader.pages)
+        for page_index in range(num_pages):
+            pdf_text = extract_pdf_text_from_page(pdf_link, page_index)
+            pdf_text = unidecode(pdf_text)
+            # print(pdf_text)
+            personals_data = get_personals_data(pdf_text)
+            page_number = page_index + 1
+            personals_data_list[page_number] = personals_data
     return personals_data_list
 
 
+def extract_pdf_text_from_page(pdf_link, page_number):
+    try:
+        if "\\" in pdf_link:
+            pdf_link = pdf_link.replace("\\", "/").strip('\'"')
+        laparams = LAParams()
+        with open(pdf_link, 'rb') as pdf_file:
+            text = extract_text(pdf_file, page_numbers=[page_number], laparams=laparams)
+            formatted_text = re.sub(":\n\n",": ", text).replace("\n\n","\n").replace(" :", ":")
+        return formatted_text
+    except Exception as e:
+        print(f"Erro ao abrir o PDF: {e}")
+        pya.alert(f"Erro ao abrir o PDF: {e}")
+        return None
+    
+
 def get_personals_data(pdf_text):
-    # pdf_text = extract_pdf_text(pdf_link)
-    # pdf_text = unidecode(pdf_text)
-    # reader = PdfReader(pdf_link)
-    # num_pages = len(reader.pages)
-    # for page_number in range(num_pages):
-    #     pdf_text = extract_pdf_text_from_page(pdf_link, page_number)
-    #     pdf_text = unidecode(pdf_text)
     personals_data = {    
         'NAME': get_name(pdf_text),
         'FATHER': get_father(pdf_text),
@@ -49,22 +62,7 @@ def get_personals_data(pdf_text):
         'RACE': '',
         'CPF': get_cpf(pdf_text)
     }
-    return personals_data
-
-
-def extract_pdf_text_from_page(pdf_link, page_number):
-    try:
-        if "\\" in pdf_link:
-            pdf_link = pdf_link.replace("\\", "/").strip('\'"')
-        laparams = LAParams()
-        with open(pdf_link, 'rb') as pdf_file:
-            text = extract_text(pdf_file, page_numbers=[page_number], laparams=laparams)
-            formatted_text = re.sub(":\n\n",": ", text).replace("\n\n","\n").replace(" :", ":")
-        return formatted_text
-    except Exception as e:
-        print(f"Erro ao abrir o PDF: {e}")
-        pya.alert(f"Erro ao abrir o PDF: {e}")
-        return None   
+    return personals_data   
 
 
 def sanitize_filename(filename):
@@ -84,9 +82,13 @@ def get_name(pdf_text): # OK
             match = re.findall(pattern, pdf_text, re.IGNORECASE)
             if match:
                 result = match[1].strip()
+                result = sanitize_filename(result)
+                if result == 'r':
+                    result = match[2].strip()
+                    result = sanitize_filename(result)
                 return result
             else:
-                return "Funcionario_Desconhecido"
+                return None
     except Exception as error:
         print("Não foi possível capturar o 'NOME'.")
         print(error)
@@ -373,6 +375,4 @@ def get_cpf(pdf_text): # OK
 
 
 
-pdf_link = r"C:\Users\luigi\tjce.jus.br\Acompanhamento De Contratos - Documentos\RH TERCEIRIZAÇÃO 2024\00. CONTROLES\CONTROLE DE VAGAS E MOVIMENTAÇÕES\Relatórios\_MIGRAÇÕES DE CONTRATOS 2024\02 EDUCAÇÃO - OK\Registros\SABRINA FARIAS SOUZA DOS SANTOS.pdf"
-pdf_link = r"C:\Users\luigi\tjce.jus.br\Acompanhamento De Contratos - Documentos\RH TERCEIRIZAÇÃO 2024\00. CONTROLES\CONTROLE DE VAGAS E MOVIMENTAÇÕES\Relatórios\_MIGRAÇÕES DE CONTRATOS 2024\02 EDUCAÇÃO - OK\Registros\LUANA MORAIS DE MELO.pdf"
-print(process_pdf(pdf_link))
+

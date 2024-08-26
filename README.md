@@ -103,3 +103,30 @@ b.2) Modo Específico + Iterar Tabela
 `Alterar link da planilha (tabelas específicas de grandes relações de movimentações)`
 _Capturar pendências de cadastro na planilha específca e buscar informações complementares nos pdfs constantes na pasta específica de cadastros._
 (Loop linha por linha, procurando informações nos pdfs da pasta específia de cadastros)
+
+
+
+<!-- a desenvolver -->
+[NOVA_LÓGICA_E_LAYOUT]
+Cadastro
+	Inserir/Fornecer PDF
+		Base Padrão
+		Alterar Base
+
+Recadastro
+	Iterar Tabela de Recadastro
+		Base Padrão
+		Alterar Base
+
+`Inserir/Fornecer PDF`: link de caminho do arquivo. futuramente, inserir o próprio documento.
+`Inserir/Fornecer PDF`: ler o pdf independente de ter 1/+ páginas.
+`Inserir/Fornecer PDF`: ler o pdf independente de ser foto ou arquivo.
+`Iterar Tabela de Recadastro`: não utilizar de pfds. captura informações apenas das planilhas. (by CPF/Nome?)
+`Base Padrão`: planilha padrão de registro de movimentação de pessoal.
+`Alterar Base`: fornecer um novo link de uma planilha específica com relação de movimentação de pessoal.
+
+
+[PENDÊNCIAS]
+Loop sobre o arquivo PDF [está funcionando?]
+Captura de informações sobre uma imagem (pdf escaneado) [quase completo]
+Iterar tabela de recadastro [nada feito]
